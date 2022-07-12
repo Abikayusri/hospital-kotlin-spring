@@ -27,7 +27,7 @@ class UserServiceImpl : UserService {
         return userRepository.getUsers().map { it.id }
     }
 
-    override fun getUserByRole(roleName: String): User? {
-        return userRepository.getUserByRole(roleName)
-    }
+//    override fun getUserByRole(roleName: String): User? {
+//        return userRepository.getUserByRole(roleName)
+//    }
 }

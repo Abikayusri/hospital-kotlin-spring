@@ -7,5 +7,5 @@ interface UserService {
     fun getUsers(): List<User>
     fun addUser(user: User): List<User>
     fun getIds(): List<String>
-    fun getUserByRole(roleName: String): User?
+//    fun getUserByRole(roleName: String): User?
 }
