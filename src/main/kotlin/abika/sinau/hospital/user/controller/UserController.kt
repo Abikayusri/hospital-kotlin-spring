@@ -46,12 +46,12 @@ class UserController {
         return BaseResponse(status = true, message = MessageResponse.SUCCESS, data = userService.getIds())
     }
 
-    @GetMapping("/role/{role-name}")
-    fun getUserByRole(@PathVariable(value = "role-name") roleName: String): BaseResponse<User>? {
-        return BaseResponse(
-                status = true,
-                message = MessageResponse.SUCCESS,
-                data = userService.getUserByRole(roleName)
-        )
-    }
+//    @GetMapping("/role/{role-name}")
+//    fun getUserByRole(@PathVariable(value = "role-name") roleName: String): BaseResponse<User>? {
+//        return BaseResponse(
+//                status = true,
+//                message = MessageResponse.SUCCESS,
+//                data = userService.getUserByRole(roleName)
+//        )
+//    }
 }

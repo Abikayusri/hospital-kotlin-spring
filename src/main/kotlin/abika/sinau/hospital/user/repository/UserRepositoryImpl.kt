@@ -1,35 +1,51 @@
 package abika.sinau.hospital.user.repository
 
+import abika.sinau.hospital.database.DatabaseComponent
 import abika.sinau.hospital.role.entity.Role
+import abika.sinau.hospital.role.repository.RoleRepository
 import abika.sinau.hospital.user.entity.User
+import com.mongodb.client.MongoCollection
+import org.litote.kmongo.eq
+import org.litote.kmongo.findOne
+import org.litote.kmongo.getCollection
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 
 @Repository
 class UserRepositoryImpl : UserRepository {
-    private val userList: MutableList<User> = mutableListOf()
+    @Autowired
+    private lateinit var databaseComponent: DatabaseComponent
 
-    init {
-        userList.addAll(listOf(
-                User(name = "Purwo", role = Role(name = "Dokter")),
-                User(name = "Purwoceng", role = Role(name = "CS")),
-        ))
-    }
+    private fun userCollection(): MongoCollection<User> = databaseComponent.database.getDatabase("user").getCollection()
+    private fun roleCollection(): MongoCollection<Role> = databaseComponent.database.getDatabase("role").getCollection()
 
     override fun getUserByName(name: String): User? {
-        return userList.find { it.name == name }
+        return userCollection().findOne(User::name eq name)
     }
 
     override fun getUsers(): List<User> {
-        return userList
+        return userCollection().find().toList()
     }
 
     override fun addUser(name: String, role: String): List<User> {
-        userList.add(User(name = name, role = Role(name = role)))
-        return userList
-    }
+        val checkRole = roleCollection().findOne(Role::name eq role)
+        val newUserRole = User(name = name, role = Role(name = role))
+        val newRole = Role(name = role)
+        val insertUser = userCollection().insertOne(newUserRole)
+        val insertRole = roleCollection().insertOne(newRole)
 
-    override fun getUserByRole(roleName: String): User? {
-        val user = userList.find { it.role?.name == roleName }
-        return user
+        return if (checkRole == null) {
+            if (insertUser.wasAcknowledged() && insertRole.wasAcknowledged()) {
+                getUsers()
+            } else {
+                throw IllegalStateException("Insert User Role Gagal ")
+            }
+        } else {
+            if (insertRole.wasAcknowledged()) {
+                getUsers()
+            } else {
+                throw IllegalStateException("Insert User Gagal")
+            }
+        }
     }
 }

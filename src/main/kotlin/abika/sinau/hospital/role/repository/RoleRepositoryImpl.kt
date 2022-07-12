@@ -1,26 +1,31 @@
 package abika.sinau.hospital.role.repository
 
+import abika.sinau.hospital.database.DatabaseComponent
 import abika.sinau.hospital.role.entity.Role
+import com.mongodb.client.MongoCollection
+import org.litote.kmongo.getCollection
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 
 @Repository
 class RoleRepositoryImpl : RoleRepository {
-    private val roleList: MutableList<Role> = mutableListOf()
 
-    init {
-        roleList.addAll(listOf(
-          Role(name = "Dokter"),
-          Role(name = "CS"),
-          Role(name = "Engineer"),
-        ))
-    }
+    @Autowired
+    private lateinit var databaseComponent: DatabaseComponent
+
+    private fun roleCollection(): MongoCollection<Role> = databaseComponent.database.getDatabase("role").getCollection()
 
     override fun getRoles(): List<Role> {
-        return roleList
+        return roleCollection().find().toList()
     }
 
     override fun addRoles(roleName: String): List<Role> {
-        roleList.add(Role(name = roleName))
-        return roleList
+        val newRole = Role(name = roleName)
+        val insertRole = roleCollection().insertOne(newRole)
+        return if (insertRole.wasAcknowledged()) {
+            getRoles()
+        } else {
+            throw IllegalStateException("Insert Gagal")
+        }
     }
 }
